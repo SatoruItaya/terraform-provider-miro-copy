@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Miro-Ecosystem/terraform-provider-miro/miro"
+	"github.com/SatoruItaya/terraform-provider-miro-copy/miro"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
