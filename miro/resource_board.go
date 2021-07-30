@@ -4,14 +4,16 @@ import (
 	"context"
 
 	"github.com/Miro-Ecosystem/go-miro/miro"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resorceBoard() *schema.Resorce {
-	return &schema.Resorce{
+func resourceBoard() *schema.Resource {
+	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Description: "Name of the Board",
-				Type:        Shema.TypeString,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"description": {
@@ -19,14 +21,16 @@ func resorceBoard() *schema.Resorce {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			CreateContext: resorceBoardCreate,
 		},
+		CreateContext: resourceBoardCreate,
+		ReadContext:   resourceBoardRead,
+		UpdateContext: resourceBoardUpdate,
+		DeleteContext: resourceBoardDelete,
 	}
 }
 
-func resorceBoardCreate(ctx context.Context, data *schema.ResorceData, meta interface{}) diag.Diagnosrics {
+func resourceBoardCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*miro.Client)
-	var diags diag.Diagnostics
 	name := data.Get("name").(string)
 	desc := data.Get("description").(string)
 
@@ -49,14 +53,15 @@ func resourceBoardRead(ctx context.Context, data *schema.ResourceData, meta inte
 	c := meta.(*miro.Client)
 
 	var diags diag.Diagnostics
-	board, err = c.Boards.Get(ctx, data.Id())
+
+	board, err := c.Boards.Get(ctx, data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if board == nil {
 		data.SetId("")
-		return diag
+		return diags
 	}
 
 	if err := data.Set("boards", board); err != nil {
@@ -64,5 +69,35 @@ func resourceBoardRead(ctx context.Context, data *schema.ResourceData, meta inte
 	}
 
 	data.SetId(board.ID)
+	return diags
+}
+
+func resourceBoardUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*miro.Client)
+	id := data.Id()
+	name := data.Get("name").(string)
+	description := data.Get("description").(string)
+
+	req := &miro.UpdateBoardRequest{
+		Name:        name,
+		Description: description,
+	}
+
+	_, err := c.Boards.Update(ctx, id, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceBoardRead(ctx, data, meta)
+}
+
+func resourceBoardDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*miro.Client)
+	var diags diag.Diagnostics
+	if err := c.Boards.Delete(ctx, data.Id()); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId("")
 	return diags
 }
