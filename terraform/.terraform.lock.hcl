@@ -4,6 +4,6 @@
 provider "registry.terraform.io/satoruitaya/miro" {
   version = "99.0.0"
   hashes = [
-    "h1:1Nx/Vs2gR4q4BASNF4ulGApawskFGu3WfHV/vu0uyD0=",
+    "h1:iBi1r+3rWx9PUmeQTGH7wXQtA5atHLQXW8FrITLfbpE=",
   ]
 }
